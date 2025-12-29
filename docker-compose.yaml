@@ -1,0 +1,51 @@
+services:
+  agent-x:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agent-x
+    restart: unless-stopped
+    depends_on:
+      - ollama-x
+      - pg-agent-x
+    ports:
+      - "8080:8080"
+  ollama-x:
+    image: ollama/ollama:latest
+    container_name: ollama-x
+    restart: unless-stopped
+
+    ports:
+      - "11434:11434"
+
+    volumes:
+      - ollama-x:/root/.ollama
+
+    # uncomment to use nvidia gpu
+    #deploy:
+    #  resources:
+    #    reservations:
+    #      devices:
+    #        - driver: nvidia
+    #          count: all          
+    #          capabilities: [gpu]
+
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+      #- OLLAMA_NUM_GPU=0 uncomment if gpu
+      # Optional: restrict visible GPUs (alternative to device_ids)
+      # - NVIDIA_VISIBLE_DEVICES=all
+  pg-agent-x:
+    image: pgvector/pgvector:pg16
+    container_name: pg-agent-x
+    environment:
+      POSTGRES_DB: simple-agent-x
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - agent-x-data-volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+volumes:
+  ollama-x:
+  agent-x-data-volume:
