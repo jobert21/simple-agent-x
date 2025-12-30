@@ -38,6 +38,7 @@ services:
   pg-agent-x:
     image: pgvector/pgvector:pg16
     container_name: pg-agent-x
+    restart: unless-stopped
     environment:
       POSTGRES_DB: simple-agent-x
       POSTGRES_USER: postgres
